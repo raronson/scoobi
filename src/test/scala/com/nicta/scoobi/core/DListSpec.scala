@@ -2,7 +2,7 @@
  * Copyright 2011,2012 National ICT Australia Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use this file exce  the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -18,6 +18,7 @@ package core
 
 import org.apache.hadoop.io.Text
 import testing.NictaSimpleJobs
+import Scoobi._
 
 class DListSpec extends NictaSimpleJobs {
 

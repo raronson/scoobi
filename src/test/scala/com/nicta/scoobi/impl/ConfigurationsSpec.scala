@@ -42,6 +42,17 @@ class ConfigurationsSpec extends UnitSpecification{
     }
   }
 
+  "Values can be added to a given key" >> {
+    "they will be comma separated by default" >> {
+      val c1 = configuration("a" -> "1")
+      c1.addValues("a", "2", "3", "4").get("a") === "1,2,3,4"
+     }
+    "redundant values are suppressed" >> {
+      val c1 = configuration("a" -> "1")
+      c1.addValues("a", "2", "1", "4").get("a") === "1,2,4"
+    }
+  }
+
   def beTheSameAs(other: Configuration): Matcher[Configuration] = (c: Configuration) =>
     (c.show == other.show, c.show+"\n\nis not the same as\n\n"+other.show)
 }
