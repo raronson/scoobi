@@ -17,6 +17,7 @@ package com.nicta.scoobi
 package application
 
 import org.apache.hadoop.fs._
+import org.apache.hadoop.conf.Configuration
 import scala.tools.nsc.Settings
 import tools.nsc.interpreter.{ReplReporter, AbstractFileClassLoader, ILoop}
 import core.ScoobiConfiguration
@@ -26,7 +27,7 @@ import tools.nsc.interpreter.IMain.ReplStrippingWriter
 import tools.nsc.util.ScalaClassLoader.URLClassLoader
 import impl.{ScoobiConfigurationImpl, ScoobiConfiguration}
 import core.ScoobiConfiguration
-import impl.io.FileSystems
+import impl.io.{FileSystems, HdfsDataIterator, HdfsReader}
 import org.apache.avro.generic.GenericRecord
 
 /** A REPL for Scoobi.
@@ -195,13 +196,16 @@ trait ReplFunctions { this: { def configuration: ScoobiConfiguration } =>
   }
 
   /** Get the contents of a text file. */
-  def cat(path: String): Iterable[String] = {
-    import scala.io._
-    val p = new Path(path)
-    val fs = p.getFileSystem(configuration.configuration)
-    fs.globStatus(p).flatMap { fstat =>
-      Source.fromInputStream(fs.open(fstat.getPath)).getLines().toIterable
-    }
+  def cat(path: String): Iterable[String] =
+    new HdfsDataIterator(textIter, new Path(path), configuration.configuration).toIterable
+
+  def textIter(p: Path, c: Configuration): HdfsReader[String] = {
+    import scala.io.Source
+    val fs = p.getFileSystem(c)
+    new { val is = Source.fromInputStream(fs.open(p)) } with HdfsReader[String] {
+          def iterator = is.getLines
+          def close() = is.close()
+        }
   }
 
   /** Get the contents of an Avro file. */

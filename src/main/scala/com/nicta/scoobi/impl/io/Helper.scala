@@ -35,10 +35,10 @@ object Helper {
   }(false)
 
   /** Get a Set of FileStatus objects for a given Path. */
-  def getFileStatus(path: Path, pathFilter: PathFilter = hiddenFilePathFilter)(implicit conf: Configuration): Seq[FileStatus] =
+  def getFileStatus(path: Path, pathFilter: PathFilter = hiddenFilePathFilter)(implicit conf: Configuration): Stream[FileStatus] =
     tryOrElse {
-      Option(FileSystem.get(path.toUri, conf).globStatus(new Path(path, "*"), pathFilter)).map(_.toSeq).getOrElse(Seq())
-    }(Seq())
+      Option(FileSystem.get(path.toUri, conf).globStatus(new Path(path, "*"), pathFilter)).map(_.toStream).getOrElse(Stream())
+    }(Stream())
 
   private val hiddenFilePathFilter = new PathFilter {
     def accept(p: Path): Boolean = !p.getName.startsWith("_") && !p.getName.startsWith(".")
