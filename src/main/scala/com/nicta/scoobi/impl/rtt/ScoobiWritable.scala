@@ -43,7 +43,10 @@ abstract class MetadataScoobiWritable extends ScoobiWritable[Any] {
 
   def metadataTag: String
 
-  lazy val wireFormat = ScoobiMetadata.metadata(configuration)(metadataTag).asInstanceOf[WireReaderWriter]
+  lazy val wireFormat = {
+    ScoobiMetadata.setConf(configuration)
+    ScoobiMetadata.metadata(metadataTag).asInstanceOf[WireReaderWriter]
+  }
 
   def write(out: DataOutput) {
     wireFormat.write(get, out)

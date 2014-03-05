@@ -30,7 +30,7 @@ import monitor.Loggable._
  *
  * When storing the metadata, it returns a path identifying the stored information in order to retrieve it later
  */
-object ScoobiMetadata {
+object ScoobiMetadata extends Configured {
 
   private implicit val logger = LogFactory.getLog("scoobi.metadata")
 
@@ -40,10 +40,10 @@ object ScoobiMetadata {
   }
 
   /** we retrieve metadata from the distributed cache and memoise each retrieved piece of metadata */
-  def metadata(implicit configuration: Configuration) = (metadataTag: String) => Memo.weakHashMapMemo[String, Any]{ metadataTag: String =>
-    logger.debug("retrieving metadata for tag "+metadataTag)
-    DistCache.pullObject(configuration, metadataTag).get: Any
-  }.apply(metadataTag)
+  lazy val metadata: String => Any = Memo.weakHashMapMemo[String, Any]{ metadataTag: String =>
+      logger.debug("retrieving metadata for tag "+metadataTag)
+      DistCache.pullObject(getConf, metadataTag).get: Any
+  }
 }
 
 /**
@@ -51,7 +51,10 @@ object ScoobiMetadata {
  */
 trait TaggedMetadata extends Configured {
   def metadataTag: String
-  lazy val metaDatas = ScoobiMetadata.metadata(configuration)(metadataTag).asInstanceOf[Map[Int, Product]]
+  lazy val metaDatas = {
+    ScoobiMetadata.setConf(configuration)
+    ScoobiMetadata.metadata(metadataTag).asInstanceOf[Map[Int, Product]]
+  }
   lazy val tags = metaDatas.keySet.toSeq
 }
 
