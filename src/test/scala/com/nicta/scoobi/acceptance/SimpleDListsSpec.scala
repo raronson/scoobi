@@ -215,4 +215,10 @@ class SimpleDListsSpec extends NictaSimpleJobs with CompNodeData { section("unst
 
     list.run must_== Seq.fill(10)(1)
   }
+
+  "34. combine empty DList with full DList" >> { implicit sc: SC =>
+    val path = "target/SimpleDListSpec/34.seq"
+    DList("a", "b").valueToSequenceFile(path, overwrite = true).persist
+    (DList[String]() ++ valueFromSequenceFile[String](path)).run.toList ==== List("a", "b")
+  }
 }
